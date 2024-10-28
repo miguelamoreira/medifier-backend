@@ -4,8 +4,12 @@ const express = require('express');
 const app = express();
 app.use(express.json());
 
-const mqttService = require('./services/mqttService')
+const mqttService = require('./services/mqttService');
+const routes = require('./routes/index')
 
+app.use('/medifier', routes);
+
+// apenas para testar a conexão ao broker
 app.post('/publish', (req, res) => {
     const { topic, message } = req.body;
     mqttService.publish(topic, message);

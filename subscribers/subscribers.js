@@ -1,15 +1,30 @@
 const mqttService = require('../services/mqttService');
 
-mqttService.subscribe('Estado sensores');
-mqttService.subscribe('Agenda');
+let touchState = null;
+let weightState = null;
 
 function processSensorState(data) {
     const { sensor, state } = data;
+
+    if (sensor === 'touch') {
+        touchState = state;
+    } else if (sensor === 'weight') {
+        weightState = state;
+    }
+
     console.log(`Estado do sensor ${sensor} recebido: ${state}`);
 }
 
 function processUpdate(item) {
     console.log('Atualização da agenda recebida:', item);
+}
+
+function getTouchState() {
+    return touchState
+}
+
+function getWeightState() {
+    return weightState
 }
 
 mqttService.mqttClient.on('message', (topic, message) => {
@@ -21,3 +36,8 @@ mqttService.mqttClient.on('message', (topic, message) => {
         processUpdate(data);
     }
 })
+
+module.exports = {
+    getTouchState,
+    getWeightState
+}

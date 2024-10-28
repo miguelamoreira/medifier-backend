@@ -1,5 +1,10 @@
 const mqttClient = require('../config/mqtt');
 
+mqttClient.on('connect', () => {
+    mqttClient.subscribe('Estado sensores');
+    mqttClient.subscribe('Agenda');
+})
+
 function publish(topic, message) {
     if (mqttClient.connected) {
         mqttClient.publish(topic, message, (err) => {
