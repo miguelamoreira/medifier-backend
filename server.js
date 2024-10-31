@@ -6,6 +6,7 @@ app.use(express.json());
 
 const mqttService = require('./services/mqttService');
 const routes = require('./routes/index')
+const db = require('./models/index')
 
 app.use('/medifier', routes);
 
