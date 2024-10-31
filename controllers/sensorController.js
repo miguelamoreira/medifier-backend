@@ -4,17 +4,19 @@ const subscribers = require('../subscribers/subscribers');
 
 exports.getTouchState = (req, res) => {
     const { state } = subscribers.getTouchState();
-
+    
     return res.status(200).json({
         sensor: 'touch',
-        state
+        state: state
     });
 }
 
 exports.updateTouchState = (req, res) => {
-    const { state } = req.body;
-
-    if (!state) {
+    const  state  = req.body.status;
+    console.log(req.body.status);
+    console.log(state);
+    
+    if (typeof(state) === undefined) {
         return res.status(400).json({
             message: 'Estado inválido'
         });

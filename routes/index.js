@@ -13,6 +13,12 @@ router.route('/sensor/weight')
 
 router.route('/agenda')
     .post(agendaController.addAgendaItem)
+    .get(agendaController.getAgenda)
+
+router.route('/agenda/:id')
+    .get(agendaController.getAgendaItem)
+    .patch(agendaController.updateAgendaItem)
+    .delete(agendaController.deleteAgendaItem)
 
 // get do histórico e as rotas das notificações (??)
 
