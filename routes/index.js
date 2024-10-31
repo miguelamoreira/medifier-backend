@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const sensorController = require('../controllers/sensorController')
 const agendaController = require('../controllers/agendaController')
+const notificationController = require('../controllers/notificationController')
 
 router.route('/sensor/touch')
     .get(sensorController.getTouchState)
@@ -20,6 +21,10 @@ router.route('/agenda/:id')
     .patch(agendaController.updateAgendaItem)
     .delete(agendaController.deleteAgendaItem)
 
+
+router.route('/notification')
+    .get(notificationController.getNotifications)
+    .post(notificationController.addNotificationItem)
 // get do histórico e as rotas das notificações (??)
 
 module.exports = router;
