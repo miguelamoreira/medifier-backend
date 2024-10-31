@@ -37,4 +37,4 @@ mqttClient.on('message', (topic, message) => {
     console.log(`Mensagem recebida no tópico ${topic}: ${message.toString()}`);
 });
 
-module.exports = { publish, subscribe }
+module.exports = { publish, subscribe, mqttClient }
