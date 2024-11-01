@@ -15,4 +15,10 @@ db.mongoose = mongoose;
     }
 })();
 
+db.users = require("./userModel.js")(mongoose);
+db.agenda = require("./agendaModel.js")(mongoose);
+db.history = require("./historyModel.js")(mongoose);
+db.notifications = require("./notificationModel.js")(mongoose);
+db.sensors = require("./sensorModel.js")(mongoose);
+
 module.exports = db;

@@ -4,6 +4,7 @@ const sensorController = require('../controllers/sensorController')
 const agendaController = require('../controllers/agendaController')
 const notificationController = require('../controllers/notificationController')
 const historyController = require('../controllers/historyController')
+const userController = require('../controllers/userController')
 
 router.route('/sensor/touch')
     .get(sensorController.getTouchState)
@@ -22,16 +23,20 @@ router.route('/agenda/:id')
     .patch(agendaController.updateAgendaItem)
     .delete(agendaController.deleteAgendaItem)
 
+router.route('/users')
+    .post(userController.register)
+
+router.route('/login')
+    .post(userController.login)
 
 router.route('/notification')
     .get(notificationController.getNotifications)
     .post(notificationController.addNotificationItem)
 
 router.route('/history')
-    .get(historyController.addHistory)
+    .post(historyController.addHistory)
 
 router.route('/history/:id')
     .get(historyController.getHistorybyUser)
-// get do histórico e as rotas das notificações (??)
 
 module.exports = router;
