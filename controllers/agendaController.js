@@ -16,19 +16,19 @@ exports.addAgendaItem = async (req, res) => {
     const item = req.body;
     const userId = req.user.id;
 
+    const time = new Date(item.time);
+
     if (!item || !item.medication || !item.time || !item.amount) {
         return res.status(400).json({
             message: 'Dados incompletos'
         });
     };
 
-    const newAgendaItem = new Agenda({
-        medication: item.medication,
-        time: item.time,
-        amount: item.amount,
-        user: userId
-    })
-    await newAgendaItem.save();
+    const newAgendaItem = await Agenda.findOneAndUpdate(
+        { user: userId },
+        { $push: { items: { medication: item.medication, time, amount: item.amount } } },
+        { new: true, upsert: true } 
+    );
 
     publishers.publishUpdate(newAgendaItem);
     return res.status(200).json({
@@ -38,8 +38,21 @@ exports.addAgendaItem = async (req, res) => {
 }
 
 exports.getAgendaItem = async (req, res) => {
-    const { itemId } = req.params;
-    const agendaItem = await Agenda.findById(itemId);
+    const { agendaId, itemId } = req.params;
+    const userId = req.user.id;
+
+    const agenda = await Agenda.findOne({
+        _id: agendaId,
+        user: userId
+    });
+
+    if (!agenda) {
+        return res.status(404).json({
+            message: 'A agenda não existe'
+        })
+    };
+
+    const agendaItem = agenda.items.id(itemId);
 
     if (!agendaItem) {
         return res.status(404).json({
@@ -54,16 +67,34 @@ exports.getAgendaItem = async (req, res) => {
 };
 
 exports.updateAgendaItem = async (req, res) => {
-    const { itemId } = req.params;
+    const { agendaId, itemId } = req.params;
     const newData = req.body;
-    
-    const updatedAgendaItem = await Agenda.findByIdAndUpdate(id, newData, { new: true });
+    const userId = req.user.id;
 
-    if (!updatedAgendaItem) {
+    const agenda = await Agenda.findOne({
+        _id: agendaId,
+        user: userId
+    });
+
+    if (!agenda) {
+        return res.status(404).json({
+            message: 'A agenda não existe'
+        })
+    };
+    
+    const updatedAgenda = await Agenda.findOneAndUpdate(
+        { _id: agendaId, user: userId, 'items._id': itemId }, 
+        { $set: { 'items.$': { ...agenda.items.id(itemId)._doc, ...newData } } }, 
+        { new: true } 
+    );
+
+    if (!updatedAgenda) {
         return res.status(404).json({
             message: 'A medicação não existe'
         })
     };
+
+    const updatedAgendaItem = updatedAgenda.items.id(itemId);
 
     publishers.publishUpdate(updatedAgendaItem);
     return res.status(200).json({
@@ -73,15 +104,30 @@ exports.updateAgendaItem = async (req, res) => {
 };
 
 exports.deleteAgendaItem = async (req, res) => {
-    const { itemId } = req.params;
+    const { agendaId, itemId } = req.params;
+    const userId = req.user.id;
+
+    const agenda = await Agenda.findOne({
+        _id: agendaId,
+        user: userId
+    });
+
+    if (!agenda) {
+        return res.status(404).json({
+            message: 'A agenda não existe'
+        })
+    };
     
-    const deletedAgendaItem = await Agenda.findByIdAndDelete(itemId);
+    const deletedAgendaItem = agenda.items.id(itemId);
 
     if (!deletedAgendaItem) {
         return res.status(404).json({
             message: 'A medicação não existe'
         })
     };
+
+    agenda.items.pull(itemId);
+    await agenda.save();
 
     return res.status(204).json({});
 };
