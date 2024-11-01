@@ -30,14 +30,12 @@ router.route('/users')
 router.route('/login')
     .post(userController.login)
 
-router.route('/notification')
-    .get(notificationController.getNotifications)
+router.route('/notifications')
+    .get(authMiddleware, notificationController.getNotifications)
     .post(notificationController.addNotificationItem)
 
 router.route('/history')
+    .get(authMiddleware, historyController.getHistoryByUser)
     .post(historyController.addHistory)
-
-router.route('/history/:id')
-    .get(historyController.getHistorybyUser)
 
 module.exports = router;

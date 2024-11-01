@@ -1,8 +1,16 @@
 const publishers = require('../publishers/publishers')
 const subscribers = require('../subscribers/subscribers');
+const Notification = require('../models/notificationModel')
 
 exports.getNotifications = async (req, res) => {
+    const userId = req.user.id;
 
+    const notifications = await Notification.find({ user: userId });
+
+    return res.status(200).json({
+        message: 'Notificações recuperadas com sucesso.',
+        items: notifications
+    });
 };
 
 exports.addNotificationItem = async (req, res) => {
