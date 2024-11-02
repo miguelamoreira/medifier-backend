@@ -3,7 +3,9 @@ const mongoose = require('mongoose');
 const agendaSchema = new mongoose.Schema({
     items: [{
         medication: String,
-        time: Date,
+        startDate: Date,
+        endDate: Date,
+        time: String,
         amount: Number
     }],
     user: {

@@ -14,18 +14,40 @@ exports.getHistoryByUser = async (req, res) => {
 };
 
 exports.addHistory = async (req, res) => {
-    const item = req.body;
+    const { medicationName } = req.body;
+    const userId = req.user.id;
+    const date = new Date();
+    let message;
 
-    if (!item || !item.date || !item.time || !item.medicine) {
-        return res.status(400).json({
-            message: 'Dados incompletos'
+    const agendaItem = await Agenda.findOne({ user: userId, 'items.medication': medicationName });
+
+    if (!agendaItem) {
+        return res.status(404).json({
+            message: 'Medicação não encontrada na agenda.'
         });
-    };
+    }
 
-    publishers.publishUpdate(item);
+    const touchState = subscribers.getTouchState();
+    const weightState = subscribers.getWeightState();
+    
+    if (touchState || weightState) {
+        message = `A medicação ${medicationName} foi tomada.`
+    } else {
+        message = `A medicação ${medicationName} não foi tomada.`
+    }
+
+    const historyItem = new History({
+        date: date,
+        medication: medicationName, 
+        user: userId,
+        message: message,
+    });
+    await historyItem.save();
+
+    publishers.publishUpdate(historyItem);
     return res.status(200).json({
-        message: 'Notificação atualizada',
-        item
+        message: 'Mensagem adicionada ao histórico com sucesso.',
+        historyItem
     });
 }
 

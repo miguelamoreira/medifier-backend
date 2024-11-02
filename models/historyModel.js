@@ -14,6 +14,10 @@ const historySchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
+    },
+    message: {
+        type: String,
+        required: true
     }
 }, {
     timestamps: false

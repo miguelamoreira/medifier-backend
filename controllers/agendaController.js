@@ -16,17 +16,23 @@ exports.addAgendaItem = async (req, res) => {
     const item = req.body;
     const userId = req.user.id;
 
-    const time = new Date(item.time);
-
-    if (!item || !item.medication || !item.time || !item.amount) {
+    if (!item || !item.medication || !item.time || !item.amount || !item.startDate || !item.endDate) {
         return res.status(400).json({
             message: 'Dados incompletos'
         });
     };
 
+    const newItem = {
+        medication: item.medication,
+        startDate: new Date(item.startDate),
+        endDate: new Date(item.endDate),
+        time: item.time,
+        amount: item.amount
+    };
+
     const newAgendaItem = await Agenda.findOneAndUpdate(
         { user: userId },
-        { $push: { items: { medication: item.medication, time, amount: item.amount } } },
+        { $push: newItem },
         { new: true, upsert: true } 
     );
 
