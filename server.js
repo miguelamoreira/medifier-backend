@@ -2,7 +2,10 @@ require('dotenv').config();
 const express = require('express');
 const db = require('./models/index')
 const app = express();
+const cors = require('cors');
+
 app.use(express.json());
+app.use(cors());
 
 const mqttService = require('./services/mqttService');
 const routes = require('./routes/index')
