@@ -1,4 +1,7 @@
 const express = require('express');
+const multer = require('multer');
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 const router = express.Router();
 const sensorController = require('../controllers/sensorController')
 const agendaController = require('../controllers/agendaController')
@@ -30,6 +33,9 @@ router.route('/users')
 router.route('/users/:userId')
     .patch(authMiddleware, userController.updateUser)
     .delete(authMiddleware, userController.deleteUser)
+
+router.route('/users/:userId/avatar')
+    .post(authMiddleware, upload.single('avatar') , userController.updateAvatar)
 
 router.route('/login')
     .post(userController.login)

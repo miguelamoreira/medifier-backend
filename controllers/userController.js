@@ -1,7 +1,7 @@
 const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-
+const cloudinary = require('../config/cloudinaryConfig');
 
 exports.login = async (req, res) => {
     const { email, password } = req.body;
@@ -21,7 +21,7 @@ exports.login = async (req, res) => {
             });
         }
         
-        const token = jwt.sign({ userId: user._id, username: user.username, email: user.email }, process.env.JWT_SECRET, { expiresIn: '24h' });
+        const token = jwt.sign({ userId: user._id, username: user.username, email: user.email, avatar: user.avatar }, process.env.JWT_SECRET, { expiresIn: '24h' });
     
         return res.status(200).json({ 
             message: 'Login feito com sucesso', 
@@ -29,7 +29,8 @@ exports.login = async (req, res) => {
             user: {
                 id: user._id,
                 username: user.username,
-                email: user.email
+                email: user.email,
+                avatar: user.avatar
             }
         });
     } catch(error){
@@ -129,6 +130,44 @@ exports.updateUser = async (req, res) => {
         return res.status(500).json({
             message: 'Erro interno do servidor',
             error: error.message,
+        });
+    }
+};
+
+exports.updateAvatar = async (req, res) => {
+    const { userId } = req.params;
+    const file = req.file;
+
+    if (!file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    try {
+        const b64 = Buffer.from(file.buffer).toString("base64");
+        let dataURI = "data:" + file.mimetype + ";base64," + b64;
+
+
+        const uploadResult = await cloudinary.uploader.upload(dataURI, {
+            folder: 'medifier',
+            resource_type: 'auto',
+        });
+            
+        const user = await User.findByIdAndUpdate( userId, { avatar: uploadResult.secure_url }, { new: true });
+
+        if (!user) {
+            return res.status(404).json({ 
+                message: 'O utilizador não existe' 
+            });
+        }
+
+        return res.status(200).json({ 
+            message: 'Avatar atualizado com sucesso', 
+            user 
+        });
+    } catch (error) {
+        return res.status(500).json({ 
+            message: 'Erro ao atualizar o avatar', 
+            error: error.message 
         });
     }
 };
