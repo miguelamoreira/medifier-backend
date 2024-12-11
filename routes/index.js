@@ -29,6 +29,7 @@ router.route('/users')
 
 router.route('/users/:userId')
     .patch(authMiddleware, userController.updateUser)
+    .delete(authMiddleware, userController.deleteUser)
 
 router.route('/login')
     .post(userController.login)
