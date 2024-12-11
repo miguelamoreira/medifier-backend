@@ -77,3 +77,58 @@ exports.register = async (req, res) => {
         });
     }
 }
+
+exports.updateUser = async (req, res) => {
+    const { userId } = req.params;
+    const { username, email, password, newPassword } = req.body;
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'O utilizador não existe' });
+        }
+
+        if (username && username !== user.username) {
+            const existingUsername = await User.findOne({ username });
+            if (existingUsername) {
+                return res.status(400).json({ message: `O username ${username} já está a ser utilizado` });
+            }
+            user.username = username;
+        }
+
+        if (email && email !== user.email) {
+            const existingEmail = await User.findOne({ email });
+            if (existingEmail) {
+                return res.status(400).json({ message: `O e-mail ${email} já está a ser utilizado` });
+            }
+            user.email = email;
+        }
+
+        if (password && newPassword) {
+            const checkPassword = bcrypt.compareSync(password, user.password);
+            if (!checkPassword) {
+                return res.status(401).json({ message: 'Palavra-passe incorreta' });
+            }
+
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+            user.password = hashedPassword;
+        }
+
+        await user.save();
+
+        return res.status(200).json({
+            message: 'Dados do utilizador atualizados com sucesso',
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+            },
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Erro interno do servidor',
+            error: error.message,
+        });
+    }
+};

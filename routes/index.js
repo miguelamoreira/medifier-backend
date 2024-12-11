@@ -27,6 +27,9 @@ router.route('/agenda/:agendaId/items/:itemId')
 router.route('/users')
     .post(userController.register)
 
+router.route('/users/:userId')
+    .patch(authMiddleware, userController.updateUser)
+
 router.route('/login')
     .post(userController.login)
 
