@@ -6,7 +6,7 @@ const agendaSchema = new mongoose.Schema({
         startDate: Date,
         endDate: Date,
         time: String,
-        amount: Number
+        amount: String
     }],
     user: {
         type: mongoose.Schema.Types.ObjectId,

@@ -20,7 +20,7 @@ exports.addAgendaItem = async (req, res) => {
         return res.status(400).json({
             message: 'Dados incompletos'
         });
-    };
+    }
 
     const newItem = {
         medication: item.medication,
@@ -30,18 +30,25 @@ exports.addAgendaItem = async (req, res) => {
         amount: item.amount
     };
 
-    const newAgendaItem = await Agenda.findOneAndUpdate(
-        { user: userId },
-        { $push: newItem },
-        { new: true, upsert: true } 
-    );
+    try {
+        const newAgendaItem = await Agenda.findOneAndUpdate(
+            { user: userId },
+            { $push: { items: newItem } },
+            { new: true, upsert: true }
+        );
 
-    publishers.publishUpdate(newAgendaItem);
-    return res.status(200).json({
-        message: 'Agenda atualizada',
-        item: newAgendaItem
-    });
-}
+        publishers.publishUpdate(newAgendaItem);
+
+        return res.status(200).json({
+            message: 'Agenda atualizada',
+            item: newAgendaItem
+        });
+
+    } catch (err) {
+        return res.status(500).json({ message: 'Erro ao atualizar agenda' });
+    }
+};
+
 
 exports.getAgendaItem = async (req, res) => {
     const { agendaId, itemId } = req.params;
