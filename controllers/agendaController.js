@@ -5,6 +5,8 @@ const Agenda = require('../models/agendaModel')
 exports.getAgenda = async (req, res) => {
     const userId = req.user.id;
     const agendaItems = await Agenda.find({ user: userId });
+    console.log(agendaItems);
+    
 
     return res.status(200).json({
         message: 'Agenda obtida com sucesso',
@@ -13,42 +15,37 @@ exports.getAgenda = async (req, res) => {
 };
 
 exports.addAgendaItem = async (req, res) => {
-    const item = req.body;
+    const { medication, startDate, endDate, times, frequency } = req.body;
     const userId = req.user.id;
-
-    if (!item || !item.medication || !item.time || !item.amount || !item.startDate || !item.endDate) {
-        return res.status(400).json({
-            message: 'Dados incompletos'
-        });
+  
+    if (!medication || !startDate || !endDate || !times || !frequency) {
+        return res.status(400).json({ message: 'Incomplete data' });
     }
-
-    const newItem = {
-        medication: item.medication,
-        startDate: new Date(item.startDate),
-        endDate: new Date(item.endDate),
-        time: item.time,
-        amount: item.amount
-    };
-
+  
     try {
-        const newAgendaItem = await Agenda.findOneAndUpdate(
+        const agendaItem = {
+            medication,
+            startDate: new Date(startDate),
+            endDate: new Date(endDate),
+            frequency,
+            items: times.map(time => ({
+                time: time.time, // Expecting time as string
+                amount: time.amount, // Expecting amount as string
+            }))
+        };
+  
+        const updatedAgenda = await Agenda.findOneAndUpdate(
             { user: userId },
-            { $push: { items: newItem } },
+            { $push: { items: agendaItem } },
             { new: true, upsert: true }
         );
-
-        publishers.publishUpdate(newAgendaItem);
-
-        return res.status(200).json({
-            message: 'Agenda atualizada',
-            item: newAgendaItem
-        });
-
-    } catch (err) {
-        return res.status(500).json({ message: 'Erro ao atualizar agenda' });
+        console.log(agendaItem);
+        return res.status(200).json({ message: 'Agenda updated', item: agendaItem });
+        
+    } catch (error) {
+        return res.status(500).json({ message: 'Error updating agenda', error: error.message });
     }
 };
-
 
 exports.getAgendaItem = async (req, res) => {
     const { agendaId, itemId } = req.params;
