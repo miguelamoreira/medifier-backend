@@ -17,33 +17,42 @@ exports.getAgenda = async (req, res) => {
 exports.addAgendaItem = async (req, res) => {
     const { medication, startDate, endDate, times, frequency } = req.body;
     const userId = req.user.id;
-  
+
     if (!medication || !startDate || !endDate || !times || !frequency) {
         return res.status(400).json({ message: 'Incomplete data' });
     }
-  
+
     try {
         const agendaItem = {
             medication,
-            startDate: new Date(startDate),
-            endDate: new Date(endDate),
+            startDate: new Date(startDate), 
+            endDate: new Date(endDate), 
             frequency,
-            items: times.map(time => ({
-                time: time.time, // Expecting time as string
-                amount: time.amount, // Expecting amount as string
+            times: times.map(time => ({
+                time: time.time, 
+                amount: time.amount, 
             }))
         };
-  
+
+        console.log('Agenda Item:', agendaItem); 
+
         const updatedAgenda = await Agenda.findOneAndUpdate(
             { user: userId },
             { $push: { items: agendaItem } },
-            { new: true, upsert: true }
+            { new: true, upsert: true } 
         );
-        console.log(agendaItem);
-        return res.status(200).json({ message: 'Agenda updated', item: agendaItem });
-        
+
+        console.log('Updated Agenda:', updatedAgenda);
+
+        return res.status(200).json({ 
+            message: 'Agenda atualizada com sucesso', 
+            item: agendaItem 
+        });
     } catch (error) {
-        return res.status(500).json({ message: 'Error updating agenda', error: error.message });
+        return res.status(500).json({ 
+            message: 'Erro ao atualizar ao adicionar item à agenda', 
+            error: error.message 
+        });
     }
 };
 
