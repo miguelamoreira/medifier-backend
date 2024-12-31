@@ -15,12 +15,14 @@ exports.getAgenda = async (req, res) => {
 };
 
 exports.addAgendaItem = async (req, res) => {
-    const { medication, startDate, endDate, times, frequency } = req.body;
+    const { medication, startDate, endDate, times, frequency, selectedDays } = req.body;
     const userId = req.user.id;
 
     if (!medication || !startDate || !endDate || !times || !frequency) {
         return res.status(400).json({ message: 'Incomplete data' });
     }
+
+    console.log('Request Body:', { medication, startDate, endDate, times, frequency, selectedDays });
 
     try {
         const agendaItem = {
@@ -33,25 +35,33 @@ exports.addAgendaItem = async (req, res) => {
                 amount: time.amount, 
             }))
         };
+        
+        if (frequency === "On specific days of the week" && Array.isArray(selectedDays) && selectedDays.length > 0) {
+            agendaItem.selectedDays = selectedDays;
+        } else {
+            agendaItem.selectedDays = undefined;  
+        }
+        
 
-        console.log('Agenda Item:', agendaItem); 
+        console.log('Agenda Item:', agendaItem);  
 
         const updatedAgenda = await Agenda.findOneAndUpdate(
             { user: userId },
             { $push: { items: agendaItem } },
-            { new: true, upsert: true } 
+            { new: true, upsert: true }
         );
 
-        console.log('Updated Agenda:', updatedAgenda);
+        console.log('Updated Agenda:', updatedAgenda); 
 
-        return res.status(200).json({ 
-            message: 'Agenda atualizada com sucesso', 
-            item: agendaItem 
+        return res.status(200).json({
+            message: 'Agenda updated successfully',
+            item: agendaItem,
         });
     } catch (error) {
-        return res.status(500).json({ 
-            message: 'Erro ao atualizar ao adicionar item à agenda', 
-            error: error.message 
+        console.error('Error adding agenda item:', error); 
+        return res.status(500).json({
+            message: 'Error while adding item to agenda',
+            error: error.message,
         });
     }
 };
