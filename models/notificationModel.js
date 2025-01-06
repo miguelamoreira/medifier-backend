@@ -9,6 +9,15 @@ const notificationSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
+    },
+    time: {
+        type: Date,
+        default: Date.now
+    },
+    type: {
+        type: String,
+        enum: ['reminder', 'missed alert'],
+        required: true
     }
 }, {
     timestamps: false

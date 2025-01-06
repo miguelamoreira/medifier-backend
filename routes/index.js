@@ -42,7 +42,7 @@ router.route('/login')
 
 router.route('/notifications')
     .get(authMiddleware, notificationController.getNotifications)
-    .post(notificationController.addNotificationItem)
+    .post(authMiddleware, notificationController.addNotificationItem)
 
 router.route('/history')
     .get(authMiddleware, historyController.getHistoryByUser)
