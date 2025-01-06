@@ -25,25 +25,36 @@ exports.addAgendaItem = async (req, res) => {
     console.log('Request Body:', { medication, startDate, endDate, times, frequency, selectedDays });
 
     try {
+        const parsedStartDate = new Date(startDate);
+        const parsedEndDate = new Date(endDate);
+
+        if (isNaN(parsedStartDate.getTime()) || isNaN(parsedEndDate.getTime())) {
+            return res.status(400).json({ message: 'Invalid start or end date' });
+        }
+
         const agendaItem = {
             medication,
-            startDate: new Date(startDate), 
-            endDate: new Date(endDate), 
+            startDate: parsedStartDate,
+            endDate: parsedEndDate,
             frequency,
-            times: times.map(time => ({
-                time: time.time, 
-                amount: time.amount, 
-            }))
+            times: times.map(time => {
+                if (!time.time || !time.amount) {
+                    throw new Error('Each time entry must have a valid time and amount');
+                }
+                return {
+                    time: time.time,
+                    amount: time.amount,
+                };
+            }),
         };
-        
+
         if (frequency === "On specific days of the week" && Array.isArray(selectedDays) && selectedDays.length > 0) {
             agendaItem.selectedDays = selectedDays;
         } else {
-            agendaItem.selectedDays = undefined;  
+            agendaItem.selectedDays = undefined;
         }
-        
 
-        console.log('Agenda Item:', agendaItem);  
+        console.log('Prepared Agenda Item:', agendaItem);
 
         const updatedAgenda = await Agenda.findOneAndUpdate(
             { user: userId },
@@ -51,14 +62,18 @@ exports.addAgendaItem = async (req, res) => {
             { new: true, upsert: true }
         );
 
-        console.log('Updated Agenda:', updatedAgenda); 
+        if (!updatedAgenda) {
+            throw new Error('Failed to update the agenda');
+        }
+
+        console.log('Updated Agenda:', updatedAgenda);
 
         return res.status(200).json({
             message: 'Agenda updated successfully',
             item: agendaItem,
         });
     } catch (error) {
-        console.error('Error adding agenda item:', error); 
+        console.error('Error adding agenda item:', error.message || error);
         return res.status(500).json({
             message: 'Error while adding item to agenda',
             error: error.message,

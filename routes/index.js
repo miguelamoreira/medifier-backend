@@ -6,6 +6,7 @@ const router = express.Router();
 const sensorController = require('../controllers/sensorController')
 const agendaController = require('../controllers/agendaController')
 const notificationController = require('../controllers/notificationController')
+const notificationsSettingsController = require('../controllers/notificationsSettingsController')
 const historyController = require('../controllers/historyController')
 const userController = require('../controllers/userController')
 const authMiddleware = require('../middlewares/authMiddleware')
@@ -43,6 +44,10 @@ router.route('/login')
 router.route('/notifications')
     .get(authMiddleware, notificationController.getNotifications)
     .post(authMiddleware, notificationController.addNotificationItem)
+
+router.route('/notifications-settings')
+    .get(authMiddleware, notificationsSettingsController.getNotificationSettings)
+    .put(authMiddleware, notificationsSettingsController.updateNotificationSettings)
 
 router.route('/history')
     .get(authMiddleware, historyController.getHistoryByUser)
